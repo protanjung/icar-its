@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find icar_routine)/config/config.yaml"/>
+
+    <node name="stm32" pkg="icar_hardware" type="stm32" output="screen" />
+</launch>
