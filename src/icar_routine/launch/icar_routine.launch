@@ -1,11 +1,16 @@
 <launch>
-    <rosparam command="load" file="$(find icar_routine)/config/config.yaml"/>
+    <rosparam command="load" file="$(find icar_routine)/config/config.yaml" />
 
-    <node name="ds4" pkg="ds4_driver" type="ds4_driver_node.py" output="log">
+    <node pkg="ds4_driver" name="ds4" type="ds4_driver_node.py" output="log">
         <remap from="/status" to="/ds4/to_pc"/>
         <remap from="/set_feedback" to="/ds4/from_pc"/>
     </node>
 
-    <node name="stm32" pkg="icar_hardware" type="stm32" output="screen" />
-    <node name="data_profiler" pkg="icar_hardware" type="data_profiler" output="screen" />
+    <!-- <node pkg="rqt_gui" name="rqt" type="rqt_gui" output="log" /> -->
+
+    <node pkg="icar_hardware" name="stm32" type="stm32" output="screen" />
+    <node pkg="icar_hardware" name="hardware_interpreter" type="hardware_interpreter" output="screen" />
+    <node pkg="icar_odometry" name="odometry_interpreter" type="odometry_interpreter" output="screen" />
+    <node pkg="icar_routine" name="transform_broadcaster" type="transform_broadcaster" output="screen" />
+    <node pkg="icar_routine" name="main_routine" type="main_routine" output="screen" />
 </launch>

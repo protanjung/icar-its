@@ -21,22 +21,20 @@ ros::Subscriber sub_stm32_from_pc;
 //=====Publisher
 ros::Publisher pub_stm32_to_pc;
 
-//=====UDP Connection
+// UDP Connection
 int sockfd = 0;
-
 struct sockaddr_in server_address;
-
 uint8_t buffer_tx[1024] = {0};
 uint8_t buffer_rx[1024] = {0};
 
-//=====Data to STM32
-uint32_t epoch_to_stm32;
+// STM32 from PC
+uint32_t epoch_from_pc;
 int16_t throttle;
 int16_t steering;
 int8_t transmission;
 
-//=====Data from STM32
-uint32_t epoch_from_stm32;
+// STM32 to PC
+uint32_t epoch_to_pc;
 uint16_t remote[16];
 uint16_t encoder_kiri;
 uint16_t encoder_kanan;
@@ -57,9 +55,9 @@ int main(int argc, char **argv)
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_stm32_from_pc = NH.subscribe("stm32/from_pc", 1, cllbck_sub_stm32_from_pc);
+    sub_stm32_from_pc = NH.subscribe("/stm32/from_pc", 1, cllbck_sub_stm32_from_pc);
     //=====Publisher
-    pub_stm32_to_pc = NH.advertise<icar_hardware::stm32_to_pc>("stm32/to_pc", 1);
+    pub_stm32_to_pc = NH.advertise<icar_hardware::stm32_to_pc>("/stm32/to_pc", 1);
 
     if (stm32_init() == -1)
         ros::shutdown();
@@ -103,11 +101,11 @@ int stm32_init()
 
 int stm32_routine()
 {
-    epoch_to_stm32++;
+    epoch_from_pc++;
 
     //==================================
 
-    memcpy(buffer_tx + 0, &epoch_to_stm32, 4);
+    memcpy(buffer_tx + 0, &epoch_from_pc, 4);
     memcpy(buffer_tx + 4, &throttle, 2);
     memcpy(buffer_tx + 6, &steering, 2);
     memcpy(buffer_tx + 8, &transmission, 1);
@@ -115,7 +113,7 @@ int stm32_routine()
     int data_len_from_pc = sendto(sockfd, buffer_tx, 11, MSG_DONTWAIT, (struct sockaddr *)&server_address, (socklen_t)sizeof(server_address));
     int data_len_to_pc = recvfrom(sockfd, buffer_rx, 50, MSG_DONTWAIT, NULL, NULL);
 
-    memcpy(&epoch_from_stm32, buffer_rx + 0, 4);
+    memcpy(&epoch_to_pc, buffer_rx + 0, 4);
     for (int i = 0; i < 16; i++)
         memcpy(&remote[i], buffer_rx + 4 + i * 2, 2);
     memcpy(&encoder_kiri, buffer_rx + 36, 2);
@@ -132,7 +130,6 @@ int stm32_routine()
     //==================================
 
     icar_hardware::stm32_to_pc msg_stm32_to_pc;
-    msg_stm32_to_pc.epoch = epoch_from_stm32;
     for (int i = 0; i < 16; i++)
         msg_stm32_to_pc.remote.push_back(remote[i]);
     msg_stm32_to_pc.encoder_kiri = encoder_kiri;

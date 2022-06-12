@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(icar_hardware)
+project(icar_odometry)
 
 ## Compile as C++14, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
+# add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -48,13 +48,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  stm32_from_pc.msg
-  stm32_to_pc.msg
-  ds4_led.msg
-  ds4_rumble.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -71,10 +69,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -107,7 +105,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES icar_hardware
+#  LIBRARIES icar_odometry
   CATKIN_DEPENDS message_runtime roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -125,7 +123,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/icar_hardware.cpp
+#   src/${PROJECT_NAME}/icar_odometry.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -136,8 +134,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(stm32 src/stm32.cpp)
-add_executable(hardware_interpreter src/hardware_interpreter.cpp)
+add_executable(odometry_interpreter src/odometry_interpreter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,12 +144,10 @@ add_executable(hardware_interpreter src/hardware_interpreter.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(stm32 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(hardware_interpreter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(odometry_interpreter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(stm32 ${catkin_LIBRARIES})
-target_link_libraries(hardware_interpreter ${catkin_LIBRARIES})
+target_link_libraries(odometry_interpreter ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -201,7 +196,7 @@ target_link_libraries(hardware_interpreter ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_icar_hardware.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_icar_odometry.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

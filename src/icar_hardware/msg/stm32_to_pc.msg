@@ -1,4 +1,3 @@
-uint32 epoch
 uint16[] remote
 uint16 encoder_kiri
 uint16 encoder_kanan
