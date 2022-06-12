@@ -1,3 +1,5 @@
+#include "ds4_driver/Feedback.h"
+#include "ds4_driver/Status.h"
 #include "icar_hardware/stm32_from_pc.h"
 #include "icar_hardware/stm32_to_pc.h"
 #include "ros/ros.h"

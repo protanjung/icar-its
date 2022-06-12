@@ -1,5 +1,11 @@
 <launch>
     <rosparam command="load" file="$(find icar_routine)/config/config.yaml"/>
 
+    <node name="ds4" pkg="ds4_driver" type="ds4_driver_node.py" output="log">
+        <remap from="/status" to="/ds4/to_pc"/>
+        <remap from="/set_feedback" to="/ds4/from_pc"/>
+    </node>
+
     <node name="stm32" pkg="icar_hardware" type="stm32" output="screen" />
+    <node name="data_profiler" pkg="icar_hardware" type="data_profiler" output="screen" />
 </launch>

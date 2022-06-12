@@ -56,6 +56,8 @@ int main(int argc, char **argv)
     NH.getParam("/stm32/port", stm32_port);
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
+    //=====Subscriber
+    sub_stm32_from_pc = NH.subscribe("stm32/from_pc", 1, cllbck_sub_stm32_from_pc);
     //=====Publisher
     pub_stm32_to_pc = NH.advertise<icar_hardware::stm32_to_pc>("stm32/to_pc", 1);
 
@@ -73,6 +75,8 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
     if (stm32_routine() == -1)
         ros::shutdown();
 }
+
+//==============================================================================
 
 void cllbck_sub_stm32_from_pc(const icar_hardware::stm32_from_pcConstPtr &msg)
 {
