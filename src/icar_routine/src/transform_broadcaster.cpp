@@ -4,7 +4,7 @@
 #include "ros/ros.h"
 
 //=====Prototype
-void cllbck_tim_50hz(const ros::TimerEvent &event);
+void cllbck_tim_100hz(const ros::TimerEvent &event);
 
 void cllbck_sub_odom_twist(const geometry_msgs::TwistConstPtr &msg);
 void cllbck_sub_odom_pose(const geometry_msgs::PoseConstPtr &msg);
@@ -12,7 +12,7 @@ void cllbck_sub_odom_pose(const geometry_msgs::PoseConstPtr &msg);
 void send_transform(tfScalar x, tfScalar y, tfScalar z, tfScalar roll, tfScalar pitch, tfScalar yaw, std::string frame_id, std::string child_id);
 
 //=====Timer
-ros::Timer tim_50hz;
+ros::Timer tim_100hz;
 //=====Subscriber
 ros::Subscriber sub_odom_twist;
 ros::Subscriber sub_odom_pose;
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     ros::AsyncSpinner AS(0);
 
     //=====Timer
-    tim_50hz = NH.createTimer(ros::Duration(0.02), cllbck_tim_50hz);
+    tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
     sub_odom_twist = NH.subscribe("/odom/twist", 1, cllbck_sub_odom_twist);
     sub_odom_pose = NH.subscribe("/odom/pose", 1, cllbck_sub_odom_pose);
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 //==============================================================================
 
-void cllbck_tim_50hz(const ros::TimerEvent &event)
+void cllbck_tim_100hz(const ros::TimerEvent &event)
 {
     send_transform(x, y, 0.00,
                    0.00, 0.00, th,

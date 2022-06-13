@@ -55,9 +55,9 @@ int main(int argc, char **argv)
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_stm32_from_pc = NH.subscribe("/stm32/from_pc", 1, cllbck_sub_stm32_from_pc);
+    sub_stm32_from_pc = NH.subscribe("/stm32_/from_pc", 1, cllbck_sub_stm32_from_pc);
     //=====Publisher
-    pub_stm32_to_pc = NH.advertise<icar_hardware::stm32_to_pc>("/stm32/to_pc", 1);
+    pub_stm32_to_pc = NH.advertise<icar_hardware::stm32_to_pc>("/stm32_/to_pc", 1);
 
     if (stm32_init() == -1)
         ros::shutdown();

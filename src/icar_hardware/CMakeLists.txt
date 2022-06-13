@@ -54,6 +54,8 @@ add_message_files(
   stm32_to_pc.msg
   ds4_led.msg
   ds4_rumble.msg
+  ds4_joy.msg
+  ds4_battery.msg
 )
 
 ## Generate services in the 'srv' folder

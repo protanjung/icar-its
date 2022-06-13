@@ -10,13 +10,13 @@
 #define PULSE_PER_M 436.0409399
 
 //=====Prototype
-void cllbck_tim_50hz(const ros::TimerEvent &event);
+void cllbck_tim_100hz(const ros::TimerEvent &event);
 
 void cllbck_sub_rotary_encoder(const std_msgs::UInt16MultiArrayConstPtr &msg);
 void cllbck_sub_gyroscope(const std_msgs::Float32ConstPtr &msg);
 
 //=====Timer
-ros::Timer tim_50hz;
+ros::Timer tim_100hz;
 //=====Subscriber
 ros::Subscriber sub_stm32_rotary_encoder;
 ros::Subscriber sub_stm32_gyroscope;
@@ -47,10 +47,10 @@ int main(int argc, char **argv)
     ros::AsyncSpinner AS(0);
 
     //=====Timer
-    tim_50hz = NH.createTimer(ros::Duration(0.02), cllbck_tim_50hz);
+    tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_stm32_rotary_encoder = NH.subscribe("/stm32_/rotary_encoder", 1, cllbck_sub_rotary_encoder);
-    sub_stm32_gyroscope = NH.subscribe("/stm32_/gyroscope", 1, cllbck_sub_gyroscope);
+    sub_stm32_rotary_encoder = NH.subscribe("/stm32/rotary_encoder", 1, cllbck_sub_rotary_encoder);
+    sub_stm32_gyroscope = NH.subscribe("/stm32/gyroscope", 1, cllbck_sub_gyroscope);
     //=====Publisher
     pub_odom_twist = NH.advertise<geometry_msgs::Twist>("/odom/twist", 1);
     pub_odom_pose = NH.advertise<geometry_msgs::Pose>("/odom/pose", 1);
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
 //==============================================================================
 
-void cllbck_tim_50hz(const ros::TimerEvent &event)
+void cllbck_tim_100hz(const ros::TimerEvent &event)
 {
     static ros::Time time_start = ros::Time::now();
     static ros::Time time_now = ros::Time::now();
