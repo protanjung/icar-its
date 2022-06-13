@@ -1,2 +1,0 @@
-float32 rumble_duration
-float32 rumble_value

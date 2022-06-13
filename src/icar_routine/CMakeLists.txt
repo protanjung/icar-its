@@ -11,11 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roscpp
   rospy
-  std_msgs
   pcl_ros
-  icar_hardware
+  geometry_msgs
+  nav_msgs
+  sensor_msgs
+  std_msgs
   icar_miscellaneous
 )
+
+find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -51,11 +55,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -72,10 +74,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -109,7 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES icar_routine
-  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs pcl_ros icar_hardware
+  CATKIN_DEPENDS message_runtime roscpp rospy pcl_ros geometry_msgs nav_msgs sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -122,6 +124,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -137,8 +140,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(transform_broadcaster src/transform_broadcaster.cpp)
 add_executable(routine src/routine.cpp)
+add_executable(odometry src/odometry.cpp)
+add_executable(transform_broadcaster src/transform_broadcaster.cpp)
+add_executable(interface_stm32 src/interface_stm32.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,12 +153,16 @@ add_executable(routine src/routine.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(transform_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(routine ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(odometry ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(transform_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(interface_stm32 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(transform_broadcaster ${catkin_LIBRARIES})
 target_link_libraries(routine ${catkin_LIBRARIES})
+target_link_libraries(odometry ${catkin_LIBRARIES})
+target_link_libraries(transform_broadcaster ${catkin_LIBRARIES})
+target_link_libraries(interface_stm32 ${catkin_LIBRARIES})
 
 #############
 ## Install ##

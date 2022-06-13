@@ -1,25 +1,23 @@
 #include "tf/transform_broadcaster.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/Twist.h"
+#include "nav_msgs/Odometry.h"
 #include "ros/ros.h"
 
 //=====Prototype
 void cllbck_tim_100hz(const ros::TimerEvent &event);
 
-void cllbck_sub_odom_twist(const geometry_msgs::TwistConstPtr &msg);
-void cllbck_sub_odom_pose(const geometry_msgs::PoseConstPtr &msg);
+void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg);
 
 void send_transform(tfScalar x, tfScalar y, tfScalar z, tfScalar roll, tfScalar pitch, tfScalar yaw, std::string frame_id, std::string child_id);
 
 //=====Timer
 ros::Timer tim_100hz;
 //=====Subscriber
-ros::Subscriber sub_odom_twist;
-ros::Subscriber sub_odom_pose;
+ros::Subscriber sub_odom;
 
-// Odometry
-double vx, vy, vth;
-double x, y, th;
+//-----Odometry
+//=============
+bool odom_is_ready = false;
+nav_msgs::Odometry odom;
 
 int main(int argc, char **argv)
 {
@@ -31,20 +29,30 @@ int main(int argc, char **argv)
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_odom_twist = NH.subscribe("/odom/twist", 1, cllbck_sub_odom_twist);
-    sub_odom_pose = NH.subscribe("/odom/pose", 1, cllbck_sub_odom_pose);
+    sub_odom = NH.subscribe("odom", 1, cllbck_sub_odom);
 
     AS.start();
     ros::waitForShutdown();
 }
 
+//------------------------------------------------------------------------------
 //==============================================================================
 
 void cllbck_tim_100hz(const ros::TimerEvent &event)
 {
-    send_transform(x, y, 0.00,
-                   0.00, 0.00, th,
-                   "odom", "base_link");
+    if (odom_is_ready)
+    {
+        double x = odom.pose.pose.position.x;
+        double y = odom.pose.pose.position.y;
+        double th = tf::getYaw(odom.pose.pose.orientation);
+
+        send_transform(x, y, 0,
+                       0, 0, th,
+                       odom.header.frame_id, odom.child_frame_id);
+    }
+
+    //==================================
+
     send_transform(2.85, 0.00, 0.65,
                    1.23, 20.00, 0.00,
                    "base_link", "lidar_link");
@@ -53,22 +61,16 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
                    "base_link", "camera_link");
 }
 
+//------------------------------------------------------------------------------
 //==============================================================================
 
-void cllbck_sub_odom_twist(const geometry_msgs::TwistConstPtr &msg)
+void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg)
 {
-    vx = msg->linear.x;
-    vy = msg->linear.y;
-    vth = msg->angular.z;
+    odom_is_ready = true;
+    odom = *msg;
 }
 
-void cllbck_sub_odom_pose(const geometry_msgs::PoseConstPtr &msg)
-{
-    x = msg->position.x;
-    y = msg->position.y;
-    th = tf::getYaw(msg->orientation);
-}
-
+//------------------------------------------------------------------------------
 //==============================================================================
 
 void send_transform(tfScalar x, tfScalar y, tfScalar z, tfScalar roll, tfScalar pitch, tfScalar yaw, std::string frame_id, std::string child_id)
