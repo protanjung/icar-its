@@ -8,9 +8,10 @@
 
     <node pkg="icar_miscellaneous" type="log" name="log" output="screen" />
     <node pkg="icar_routine" type="interface_stm32" name="interface_stm32" output="screen" />
+    <node pkg="icar_routine" type="interface_ds4" name="interface_ds4" output="screen" />
     <node pkg="icar_routine" type="transform_broadcaster" name="transform_broadcaster" output="screen" />
     <node pkg="icar_routine" type="odometry" name="odometry" output="screen" />
     <node pkg="icar_routine" type="routine" name="routine" output="screen" />
 
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(env HOME)/icar-its-data/rviz/start.rviz" />
+    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(env HOME)/icar-its-data/rviz/start.rviz" /> -->
 </launch>

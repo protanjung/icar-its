@@ -26,6 +26,10 @@ std::string stm32_ip;
 int stm32_port;
 //=====Timer
 ros::Timer tim_100hz;
+//=====Subscriber
+ros::Subscriber sub_stm32_from_pc_throttle;
+ros::Subscriber sub_stm32_from_pc_steering;
+ros::Subscriber sub_stm32_from_pc_transmission;
 //=====Publisher
 ros::Publisher pub_stm32_to_pc_remote;
 ros::Publisher pub_stm32_to_pc_rotary_encoder;
@@ -69,6 +73,10 @@ int main(int argc, char **argv)
     NH.getParam("stm32/port", stm32_port);
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
+    //=====Subscriber
+    sub_stm32_from_pc_throttle = NH.subscribe("stm32_from_pc/throttle", 1, cllbck_sub_stm32_from_pc_throttle);
+    sub_stm32_from_pc_steering = NH.subscribe("stm32_from_pc/steering", 1, cllbck_sub_stm32_from_pc_steering);
+    sub_stm32_from_pc_transmission = NH.subscribe("stm32_from_pc/transmission", 1, cllbck_sub_stm32_from_pc_transmission);
     //=====Publisher
     pub_stm32_to_pc_remote = NH.advertise<std_msgs::UInt16MultiArray>("stm32_to_pc/remote", 1);
     pub_stm32_to_pc_rotary_encoder = NH.advertise<std_msgs::UInt16MultiArray>("stm32_to_pc/rotary_encoder", 1);

@@ -1,0 +1,2 @@
+float32 large_strength
+float32 small_strength
