@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_log = NH.subscribe("/log", 10, cllbck_sub_log);
+    sub_log = NH.subscribe("/log", 0, cllbck_sub_log);
 
     if (log_init() == -1)
         ros::shutdown();

@@ -41,7 +41,7 @@ public:
 
     void init(ros::NodeHandle *NH)
     {
-        pub_log = NH->advertise<icar_miscellaneous::log>("log", 10);
+        pub_log = NH->advertise<icar_miscellaneous::log>("log", 0);
     }
 
     //==================================

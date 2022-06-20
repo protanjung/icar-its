@@ -53,6 +53,12 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
 
     //==================================
 
+    send_transform(0.00, 0.00, 0.00,
+                   0.00, 0.00, 0.00,
+                   "base_link", "rear_axle_link");
+    send_transform(2.10, 0.00, 0.00,
+                   0.00, 0.00, 0.00,
+                   "base_link", "front_axle_link");
     send_transform(2.85, 0.00, 0.65,
                    1.23, 20.00, 0.00,
                    "base_link", "lidar_link");

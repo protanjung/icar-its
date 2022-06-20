@@ -13,5 +13,5 @@
     <node pkg="icar_routine" type="odometry" name="odometry" output="screen" />
     <node pkg="icar_routine" type="routine" name="routine" output="screen" />
 
-    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(env HOME)/icar-its-data/rviz/start.rviz" /> -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(env HOME)/icar-its-data/rviz/start.rviz" />
 </launch>
