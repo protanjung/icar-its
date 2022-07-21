@@ -17,8 +17,6 @@ void marker_odometry_routine()
 
         geometry_msgs::Point p;
 
-        //==============================
-
         p.x = x_front;
         p.y = y_front;
         marker_odometry_front.push_back(p);
@@ -28,17 +26,6 @@ void marker_odometry_routine()
         p.y = y_rear;
         marker_odometry_rear.push_back(p);
         _marker.add_line_strip(marker_odometry_rear, "odom", "odometry", 1, 0.8, 0.9, 0.1, 0.05);
-
-        //==============================
-
-        std::vector<geometry_msgs::Point> lookahead;
-        for (int i = 0; i < 145; i++)
-        {
-            p.x = x_front + 4.2 * cosf(i * 2.5 * M_PI / 180);
-            p.y = y_front + 4.2 * sinf(i * 2.5 * M_PI / 180);
-            lookahead.push_back(p);
-        }
-        _marker.add_line_strip(lookahead, "odom", "lookahead", 0, 0.0, 1.0, 0.0, 0.05);
     }
 }
 
@@ -126,8 +113,6 @@ void algorithm_routine()
 void iddle_routine()
 {
     _led.led(0.2, 0.2, 0.2, 0.2, 0.2);
-
-    jalan_manual(joy.analog_y2 * 100, joy.analog_x1 * 100, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -339,9 +324,9 @@ void load_route_routine()
             while (std::getline(ss, word, ','))
                 row.push_back(word);
 
-            geometry_msgs::Point p;
-
             //==========================
+
+            geometry_msgs::Point p;
 
             p.x = std::stod(row[0]);
             p.y = std::stod(row[1]);
@@ -350,10 +335,6 @@ void load_route_routine()
             p.x = std::stod(row[3]);
             p.y = std::stod(row[4]);
             marker_route_rear.push_back(p);
-
-            //==========================
-
-            marker_route_routine();
         }
 
         _log.info("Standby STATUS_ROUTE_LOAD");

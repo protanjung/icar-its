@@ -113,6 +113,10 @@ extern std::vector<geometry_msgs::Point> marker_odometry_rear;
 extern std::vector<geometry_msgs::Point> marker_route_front;
 extern std::vector<geometry_msgs::Point> marker_route_rear;
 
+//-----Pure Pursuit
+//=================
+extern pure_pursuit pp;
+
 //=====Prototype
 void cllbck_tim_100hz(const ros::TimerEvent &event);
 

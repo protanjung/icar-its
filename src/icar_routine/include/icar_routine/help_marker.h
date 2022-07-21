@@ -56,6 +56,35 @@ public:
 
         pub_marker.publish(msg_marker);
     }
+
+    void add_sphere(geometry_msgs::Point point, std::string frame_id, std::string ns, int32_t id, float r, float g, float b, double scale)
+    {
+        visualization_msgs::Marker msg_marker;
+
+        msg_marker.header.frame_id = frame_id;
+        msg_marker.header.stamp = ros::Time::now();
+
+        msg_marker.ns = ns;
+        msg_marker.id = id;
+
+        msg_marker.type = visualization_msgs::Marker::SPHERE;
+        msg_marker.action = visualization_msgs::Marker::ADD;
+
+        msg_marker.pose.position = point;
+
+        msg_marker.pose.orientation.w = 1.0;
+
+        msg_marker.color.r = r;
+        msg_marker.color.g = g;
+        msg_marker.color.b = b;
+        msg_marker.color.a = 1.0;
+
+        msg_marker.scale.x = scale;
+        msg_marker.scale.y = scale;
+        msg_marker.scale.z = scale;
+
+        pub_marker.publish(msg_marker);
+    }
 };
 
 #endif
