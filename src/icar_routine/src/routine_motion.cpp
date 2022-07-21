@@ -14,10 +14,3 @@ void jalan_manual(float _throttle, float _steering, uint8_t _transmission)
     msg_transmission.data = _transmission;
     pub_transmission.publish(msg_transmission);
 }
-
-//------------------------------------------------------------------------------
-//==============================================================================
-
-void pure_pursuit()
-{
-}

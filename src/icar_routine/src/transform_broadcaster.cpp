@@ -47,7 +47,7 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
         double th = tf::getYaw(odom.pose.pose.orientation);
 
         send_transform(x, y, 0,
-                       0, 0, th,
+                       0, 0, th * 180 / M_PI,
                        odom.header.frame_id, odom.child_frame_id);
     }
 

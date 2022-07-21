@@ -75,7 +75,7 @@ std::vector<geometry_msgs::Point> marker_route_rear;
 
 //-----Pure Pursuit
 //=================
-double pp_lookahead = 2.1; // Dalam m
+pure_pursuit pp(2.1, 4.2);
 
 int main(int argc, char **argv)
 {
@@ -210,6 +210,18 @@ int routine_routine()
     marker_odometry_routine();
     marker_route_routine();
 
+    if (!prev_joy.circle && joy.circle)
+    {
+        _log.warn("CIRCLE");
+        pp.init(marker_route_rear);
+    }
+
+    if (!prev_joy.square && joy.square)
+    {
+        _log.warn("SQUARE");
+        pp.routine(x, y, th);
+    }
+
     return 0;
 }
 
@@ -271,10 +283,11 @@ void baca_metric()
 
     time_now = ros::Time::now();
 
-    if (time_now - time_last > ros::Duration(0.5))
+    if (time_now - time_last > ros::Duration(0.05))
     {
         double dx = x - prev_x;
         double dy = y - prev_y;
+
         double distance = sqrt(dx * dx + dy * dy);
         double forward = cos(th - atan2(dy, dx));
 

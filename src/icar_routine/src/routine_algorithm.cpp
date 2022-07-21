@@ -17,6 +17,8 @@ void marker_odometry_routine()
 
         geometry_msgs::Point p;
 
+        //==============================
+
         p.x = x_front;
         p.y = y_front;
         marker_odometry_front.push_back(p);
@@ -26,6 +28,17 @@ void marker_odometry_routine()
         p.y = y_rear;
         marker_odometry_rear.push_back(p);
         _marker.add_line_strip(marker_odometry_rear, "odom", "odometry", 1, 0.8, 0.9, 0.1, 0.05);
+
+        //==============================
+
+        std::vector<geometry_msgs::Point> lookahead;
+        for (int i = 0; i < 145; i++)
+        {
+            p.x = x_front + 4.2 * cosf(i * 2.5 * M_PI / 180);
+            p.y = y_front + 4.2 * sinf(i * 2.5 * M_PI / 180);
+            lookahead.push_back(p);
+        }
+        _marker.add_line_strip(lookahead, "odom", "lookahead", 0, 0.0, 1.0, 0.0, 0.05);
     }
 }
 
@@ -113,6 +126,8 @@ void algorithm_routine()
 void iddle_routine()
 {
     _led.led(0.2, 0.2, 0.2, 0.2, 0.2);
+
+    jalan_manual(joy.analog_y2 * 100, joy.analog_x1 * 100, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -135,16 +150,19 @@ void record_route_routine()
 
     case STATUS_ROUTE_RECORD_STARTED:
     {
-        // Waktu terakhir state ini
-        static ros::Time last_run;
+        // Waktu terakhir dan waktu sekarang
+        static ros::Time time_last;
+        static ros::Time time_now;
 
         // x dan y terakhir
         static double prev_x;
         static double prev_y;
 
+        time_now = ros::Time::now();
+
         // Jika waktu terakhir state ini lebih dari 0.1 detik,
         // maka akan membuka file csv baru dan mencatat koordinat pertama
-        if (ros::Time::now() - last_run > ros::Duration(0.1))
+        if (time_now - time_last > ros::Duration(0.1))
         {
             prev_x = x;
             prev_y = y;
@@ -167,14 +185,14 @@ void record_route_routine()
         }
 
         // Mencatat waktu terakhir state ini
-        last_run = ros::Time::now();
+        time_last = time_now;
 
         // dx dan dy
         double dx = x - prev_x;
         double dy = y - prev_y;
 
-        // Jika jarak antara koordinat terakhir dan koordinat saat
-        // ini lebih dari 0.01, maka akan mencatat koordinat tersebut
+        // Jika jarak antara koordinat terakhir dan koordinat saat ini
+        // lebih dari 0.01, maka akan mencatat koordinat tersebut
         if (sqrt(dx * dx + dy * dy) >= 0.01)
         {
             prev_x = x;

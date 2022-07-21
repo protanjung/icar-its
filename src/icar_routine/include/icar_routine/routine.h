@@ -4,12 +4,15 @@
 #include "boost/filesystem.hpp"
 #include "fcntl.h"
 #include "geometry_msgs/Point.h"
+#include "icar_routine/bicycle_model.h"
 #include "icar_routine/help_joy.h"
 #include "icar_routine/help_led.h"
 #include "icar_routine/help_log.h"
 #include "icar_routine/help_marker.h"
 #include "icar_routine/help_rumble.h"
+#include "icar_routine/pure_pursuit.h"
 #include "nav_msgs/Odometry.h"
+#include "nav_msgs/Path.h"
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
@@ -139,7 +142,5 @@ void load_route_routine();
 
 //=====Prototype - Motion
 void jalan_manual(float _throttle, float _steering, uint8_t _transmission);
-
-void pure_pursuit();
 
 #endif

@@ -88,19 +88,28 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
     if (rotary_encoder_kiri < 16384 && prev_rotary_encoder_kiri > 49152)
         tangential_velocity_kiri = rotary_encoder_kiri + (65536 - prev_rotary_encoder_kiri);
     else if (rotary_encoder_kiri > 49152 && prev_rotary_encoder_kiri < 16384)
-        tangential_velocity_kiri = -prev_rotary_encoder_kiri - (655356 - rotary_encoder_kiri);
+        tangential_velocity_kiri = -prev_rotary_encoder_kiri - (65536 - rotary_encoder_kiri);
     else
         tangential_velocity_kiri = rotary_encoder_kiri - prev_rotary_encoder_kiri;
 
     if (rotary_encoder_kanan < 16384 && prev_rotary_encoder_kanan > 49152)
         tangential_velocity_kanan = rotary_encoder_kanan + (65536 - prev_rotary_encoder_kanan);
     else if (rotary_encoder_kanan > 49152 && prev_rotary_encoder_kanan < 16384)
-        tangential_velocity_kanan = -prev_rotary_encoder_kanan - (655356 - rotary_encoder_kanan);
+        tangential_velocity_kanan = -prev_rotary_encoder_kanan - (65536 - rotary_encoder_kanan);
     else
         tangential_velocity_kanan = rotary_encoder_kanan - prev_rotary_encoder_kanan;
 
     vth = gyroscope_rad - prev_gyroscope_rad;
+    if (vth > M_PI)
+        vth -= 2 * M_PI;
+    else if (vth < -M_PI)
+        vth += 2 * M_PI;
+
     th += vth;
+    if (th > M_PI)
+        th -= 2 * M_PI;
+    else if (th < -M_PI)
+        th += 2 * M_PI;
 
     vx = ((tangential_velocity_kiri + tangential_velocity_kanan) * 0.5 * M_PER_PULSE) * cos(th);
     vy = ((tangential_velocity_kiri + tangential_velocity_kanan) * 0.5 * M_PER_PULSE) * sin(th);
