@@ -243,18 +243,6 @@ int routine_routine()
         _marker.add_sphere(p, "odom", "pp_goal", 0, 1.0, 0.0, 0.0, 0.20);
     }
 
-    {
-        geometry_msgs::Point p;
-        std::vector<geometry_msgs::Point> vector_of_p;
-        p.x = x_front;
-        p.y = y_front;
-        vector_of_p.push_back(p);
-        p.x = x_front + 1 * cosf(pp.delta + th_front);
-        p.y = y_front + 1 * sinf(pp.delta + th_front);
-        vector_of_p.push_back(p);
-        _marker.add_line_strip(vector_of_p, "odom", "pp_delta", 0, 0.0, 0.0, 1.0, 0.05);
-    }
-
     jalan_manual(0, -167 * pp.delta * 180 / M_PI, 1);
 
     return 0;

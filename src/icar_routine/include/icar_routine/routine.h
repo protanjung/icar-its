@@ -4,7 +4,6 @@
 #include "boost/filesystem.hpp"
 #include "fcntl.h"
 #include "geometry_msgs/Point.h"
-#include "icar_routine/bicycle_model.h"
 #include "icar_routine/help_joy.h"
 #include "icar_routine/help_led.h"
 #include "icar_routine/help_log.h"
