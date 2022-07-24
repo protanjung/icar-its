@@ -1,23 +1,13 @@
 #include "tf/transform_broadcaster.h"
-#include "nav_msgs/Odometry.h"
 #include "ros/ros.h"
 
 //=====Prototype
 void cllbck_tim_100hz(const ros::TimerEvent &event);
 
-void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg);
-
 void send_transform(tfScalar x, tfScalar y, tfScalar z, tfScalar roll, tfScalar pitch, tfScalar yaw, std::string frame_id, std::string child_id);
 
 //=====Timer
 ros::Timer tim_100hz;
-//=====Subscriber
-ros::Subscriber sub_odom;
-
-//-----Odometry
-//=============
-bool odom_is_ready = false;
-nav_msgs::Odometry odom;
 
 int main(int argc, char **argv)
 {
@@ -28,8 +18,6 @@ int main(int argc, char **argv)
 
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
-    //=====Subscriber
-    sub_odom = NH.subscribe("odom", 1, cllbck_sub_odom);
 
     AS.start();
     ros::waitForShutdown();
@@ -40,19 +28,6 @@ int main(int argc, char **argv)
 
 void cllbck_tim_100hz(const ros::TimerEvent &event)
 {
-    if (odom_is_ready)
-    {
-        double x = odom.pose.pose.position.x;
-        double y = odom.pose.pose.position.y;
-        double th = tf::getYaw(odom.pose.pose.orientation);
-
-        send_transform(x, y, 0,
-                       0, 0, th * 180 / M_PI,
-                       odom.header.frame_id, odom.child_frame_id);
-    }
-
-    //==================================
-
     send_transform(0.00, 0.00, 0.00,
                    0.00, 0.00, 0.00,
                    "base_link", "rear_axle_link");
@@ -65,15 +40,6 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
     send_transform(2.85, 0.00, 0.95,
                    0.00, 0.00, 0.00,
                    "base_link", "camera_link");
-}
-
-//------------------------------------------------------------------------------
-//==============================================================================
-
-void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg)
-{
-    odom_is_ready = true;
-    odom = *msg;
 }
 
 //------------------------------------------------------------------------------

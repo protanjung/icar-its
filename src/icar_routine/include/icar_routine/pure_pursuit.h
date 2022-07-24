@@ -72,6 +72,11 @@ public:
         // maka menggunakan index waypoint terakhir
         if (_path_index >= _path.size())
         {
+            // TODO Ini di-looping terus menerus
+            _path_index = 1;
+            _path_index_start = 0;
+            _path_index_stop = 1;
+
             // TODO Masih bingung ini mau diisi apa
             x_goal = _path[_path_index_stop].x;
             y_goal = _path[_path_index_stop].y;
@@ -140,6 +145,19 @@ public:
     double get_look_ahead_distance()
     {
         return _look_ahead_distance;
+    }
+
+    //----------------------------------
+    //==================================
+
+    void set_wheel_base(double wheel_base)
+    {
+        _wheel_base = wheel_base;
+    }
+
+    void set_look_ahead_distance(double look_ahead_distance)
+    {
+        _look_ahead_distance = look_ahead_distance;
     }
 };
 

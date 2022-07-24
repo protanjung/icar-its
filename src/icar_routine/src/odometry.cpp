@@ -22,7 +22,7 @@ ros::Timer tim_100hz;
 ros::Subscriber sub_stm32_to_pc_rotary_encoder;
 ros::Subscriber sub_stm32_to_pc_gyroscope;
 //=====Publisher
-ros::Publisher pub_odom;
+ros::Publisher pub_odometry_raw;
 
 //-----Rotary encoder
 //===================
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     sub_stm32_to_pc_rotary_encoder = NH.subscribe("stm32_to_pc/rotary_encoder", 1, cllbck_sub_stm32_to_pc_rotary_encoder);
     sub_stm32_to_pc_gyroscope = NH.subscribe("stm32_to_pc/gyroscope", 1, cllbck_sub_stm32_to_pc_gyroscope);
     //=====Publisher
-    pub_odom = NH.advertise<nav_msgs::Odometry>("odom", 1);
+    pub_odometry_raw = NH.advertise<nav_msgs::Odometry>("odometry/raw", 1);
 
     AS.start();
     ros::waitForShutdown();
@@ -67,12 +67,14 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
 {
     static ros::Time time_start = ros::Time::now();
     static ros::Time time_now = ros::Time::now();
+    static ros::Time time_prev = ros::Time::now();
 
     static uint16_t prev_rotary_encoder_kiri;
     static uint16_t prev_rotary_encoder_kanan;
     static float prev_gyroscope_deg;
     static float prev_gyroscope_rad;
 
+    time_prev = time_now;
     time_now = ros::Time::now();
 
     if (time_now - time_start < ros::Duration(2))
@@ -117,22 +119,34 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
     y += vy;
 
     geometry_msgs::Twist odom_twist;
-    odom_twist.linear.x = vx;
-    odom_twist.linear.y = vy;
-    odom_twist.angular.z = vth;
+    odom_twist.linear.x = ((tangential_velocity_kiri + tangential_velocity_kanan) * 0.5 * M_PER_PULSE) / (time_now - time_prev).toSec();
+    odom_twist.linear.y = 0;
+    odom_twist.angular.z = vth / (time_now - time_prev).toSec();
 
     geometry_msgs::Pose odom_pose;
     odom_pose.position.x = x;
     odom_pose.position.y = y;
     odom_pose.orientation = tf::createQuaternionMsgFromYaw(th);
 
-    nav_msgs::Odometry msg_odom;
-    msg_odom.header.stamp = time_now;
-    msg_odom.header.frame_id = "odom";
-    msg_odom.child_frame_id = "base_link";
-    msg_odom.twist.twist = odom_twist;
-    msg_odom.pose.pose = odom_pose;
-    pub_odom.publish(msg_odom);
+    nav_msgs::Odometry msg_odometry_raw;
+    msg_odometry_raw.header.stamp = time_now;
+    msg_odometry_raw.header.frame_id = "odom";
+    msg_odometry_raw.child_frame_id = "base_link";
+    msg_odometry_raw.twist.twist = odom_twist;
+    msg_odometry_raw.twist.covariance = {1e-3, 0, 0, 0, 0, 0,
+                                         0, 1e-3, 0, 0, 0, 0,
+                                         0, 0, 1e6, 0, 0, 0,
+                                         0, 0, 0, 1e6, 0, 0,
+                                         0, 0, 0, 0, 1e6, 0,
+                                         0, 0, 0, 0, 0, 1e-3};
+    pub_odometry_raw.publish(msg_odometry_raw);
+    msg_odometry_raw.pose.pose = odom_pose;
+    msg_odometry_raw.pose.covariance = {1e-3, 0, 0, 0, 0, 0,
+                                        0, 1e-3, 0, 0, 0, 0,
+                                        0, 0, 1e6, 0, 0, 0,
+                                        0, 0, 0, 1e6, 0, 0,
+                                        0, 0, 0, 0, 1e6, 0,
+                                        0, 0, 0, 0, 0, 1e-3};
 
     prev_rotary_encoder_kiri = rotary_encoder_kiri;
     prev_rotary_encoder_kanan = rotary_encoder_kanan;

@@ -1,0 +1,127 @@
+<launch>
+    <rosparam command="load" file="$(env HOME)/icar-its-data/config/start.yaml" />
+
+    <!-- =================================================================== -->
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(env HOME)/icar-its-data/rviz/start.rviz" />
+
+    <!-- =================================================================== -->
+
+    <node pkg="ds4_driver" name="ds4" type="ds4_driver_node.py" output="log">
+        <remap from="/status" to="/ds4_raw/to_pc" />
+        <remap from="/set_feedback" to="/ds4_raw/from_pc" />
+    </node>
+
+    <!-- =================================================================== -->
+
+    <include file="$(find mavros)/launch/apm.launch">
+        <arg name="fcu_url" value="/dev/ttyACM0:57600" />
+        <arg name="gcs_url" value="" />
+        <arg name="tgt_system" value="1" />
+        <arg name="tgt_component" value="1" />
+        <arg name="log_output" value="log" />
+        <arg name="fcu_protocol" value="v2.0" />
+        <arg name="respawn_mavros" value="false" />
+    </include>
+
+    <rosparam param="/mavros/conn/timesync_rate">0.0</rosparam>
+
+    <!-- =================================================================== -->
+
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_local" output="log">
+        <param name="frequency" value="100"/>
+        <param name="sensor_timeout" value="0.2"/>
+        <param name="two_d_mode" value="true"/>
+
+        <param name="map_frame" value="map"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="base_link_frame" value="base_link"/>
+        <param name="world_frame" value="odom"/>
+
+        <param name="odom0" value="odometry/raw"/>
+        <rosparam param="odom0_config">[false, false, false,
+                                        false, false, false,
+                                        true,  true,  false,
+                                        false, false, true,
+                                        false, false, false]</rosparam>
+        <param name="odom0_differential" value="false"/>
+        <param name="odom0_relative" value="false"/>
+        <param name="odom0_queue_size" value="10"/>
+
+
+        <param name="imu0" value="mavros/imu/data"/>
+        <rosparam param="imu0_config">[false, false, false,
+                               false, false, true,
+                               false, false, false,
+                               false, false, false,
+                               false, false, false]</rosparam>
+        <param name="imu0_differential" value="false"/>
+        <param name="imu0_relative" value="false"/>
+        <param name="imu0_queue_size" value="10"/>
+
+        <remap from="odometry/filtered" to="odometry/filtered/local"/>
+    </node>
+
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_global" output="log">
+        <param name="frequency" value="100"/>
+        <param name="sensor_timeout" value="0.2"/>
+        <param name="two_d_mode" value="true"/>
+
+        <param name="map_frame" value="map"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="base_link_frame" value="base_link"/>
+        <param name="world_frame" value="map"/>
+
+        <param name="odom0" value="odometry/raw"/>
+        <rosparam param="odom0_config">[false, false, false,
+                                        false, false, false,
+                                        true,  true,  false,
+                                        false, false, true,
+                                        false, false, false]</rosparam>
+        <param name="odom0_differential" value="false"/>
+        <param name="odom0_relative" value="false"/>
+        <param name="odom0_queue_size" value="10"/>
+
+        <param name="imu0" value="mavros/imu/data"/>
+        <rosparam param="imu0_config">[false, false, false,
+                               false, false, true,
+                               false, false, false,
+                               false, false, false,
+                               false, false, false]</rosparam>
+        <param name="imu0_differential" value="false"/>
+        <param name="imu0_relative" value="false"/>
+        <param name="imu0_queue_size" value="10"/>
+
+        <param name="odom1" value="odometry/gps"/>
+        <rosparam param="odom1_config">[true,  true, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]</rosparam>
+        <param name="odom1_differential" value="false"/>
+        <param name="odom1_relative" value="false"/>
+        <param name="odom1_queue_size" value="10"/>
+
+        <remap from="odometry/filtered" to="odometry/filtered/global"/>
+    </node>
+
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" output="log" respawn="true">
+        <param name="wait_for_datum" value="true"/>
+        <rosparam param="datum">[-7.277655, 112.797730, 0.0]</rosparam>
+
+        <remap from="/imu/data" to="mavros/imu/data" />
+        <remap from="/gps/fix" to="mavros/global_position/raw/fix" />
+        <remap from="/odometry/filtered" to="odometry/filtered/global" />
+    </node>
+
+    <!-- =================================================================== -->
+
+    <node pkg="icar_miscellaneous" type="log" name="log" output="screen" />
+    <node pkg="icar_routine" type="transform_broadcaster" name="transform_broadcaster" output="screen" />
+    <node pkg="icar_routine" type="interface_stm32" name="interface_stm32" output="screen" />
+    <node pkg="icar_routine" type="interface_ds4" name="interface_ds4" output="screen" />
+    <node pkg="icar_routine" type="interface_px4" name="interface_px4" output="screen" />
+    <node pkg="icar_routine" type="odometry" name="odometry" output="screen" />
+    <node pkg="icar_routine" type="routine" name="routine" output="screen" />
+
+</launch>

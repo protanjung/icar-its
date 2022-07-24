@@ -10,6 +10,7 @@
 #include "icar_routine/help_marker.h"
 #include "icar_routine/help_rumble.h"
 #include "icar_routine/pure_pursuit.h"
+#include "mavros_msgs/StreamRate.h"
 #include "nav_msgs/Odometry.h"
 #include "nav_msgs/Path.h"
 #include "ros/ros.h"
@@ -42,7 +43,6 @@
 //=====Timer
 extern ros::Timer tim_100hz;
 //=====Subscriber
-extern ros::Subscriber sub_odom;
 extern ros::Subscriber sub_stm32_to_pc_remote;
 extern ros::Subscriber sub_stm32_to_pc_throttle_position;
 extern ros::Subscriber sub_stm32_to_pc_steering_position;
@@ -50,6 +50,8 @@ extern ros::Subscriber sub_stm32_to_pc_steering_position;
 extern ros::Publisher pub_throttle;
 extern ros::Publisher pub_steering;
 extern ros::Publisher pub_transmission;
+//=====ServiceClient
+extern ros::ServiceClient cli_mavros_set_stream_rate;
 //=====TransformListener
 extern tf::TransformListener *transform_listener;
 //=====Miscellaneous
@@ -67,9 +69,6 @@ extern int status_sub_sub_algoritma;
 
 //-----Odometry
 //=============
-extern bool odom_is_ready;
-extern nav_msgs::Odometry odom;
-
 extern double x, y, th;
 extern double x_rear, y_rear, th_rear;
 extern double x_front, y_front, th_front;
@@ -119,7 +118,6 @@ extern pure_pursuit pp;
 //=====Prototype
 void cllbck_tim_100hz(const ros::TimerEvent &event);
 
-void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg);
 void cllbck_sub_stm32_to_pc_remote(const std_msgs::UInt16MultiArrayConstPtr &msg);
 void cllbck_sub_stm32_to_pc_throttle_position(const std_msgs::Int16ConstPtr &msg);
 void cllbck_sub_stm32_to_pc_steering_position(const std_msgs::Int16ConstPtr &msg);
@@ -128,6 +126,7 @@ void cllbck_sub_stm32_to_pc_steering_position(const std_msgs::Int16ConstPtr &msg
 int routine_init();
 int routine_routine();
 
+void baca_posisi();
 void baca_joystick();
 void baca_keyboard();
 void baca_metric();

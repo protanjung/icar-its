@@ -8,7 +8,7 @@ void marker_odometry_routine()
     double dx = x - prev_x;
     double dy = y - prev_y;
 
-    if (sqrt(dx * dx + dy * dy) >= 0.01)
+    if (sqrt(dx * dx + dy * dy) >= 0.1)
     {
         prev_x = x;
         prev_y = y;
@@ -20,22 +20,22 @@ void marker_odometry_routine()
         p.x = x_front;
         p.y = y_front;
         marker_odometry_front.push_back(p);
-        _marker.add_line_strip(marker_odometry_front, "odom", "odometry", 0, 1.0, 0.4, 0.0, 0.05);
+        _marker.add_line_strip(marker_odometry_front, "map", "odometry", 0, 1.0, 0.4, 0.0, 0.05);
 
         p.x = x_rear;
         p.y = y_rear;
         marker_odometry_rear.push_back(p);
-        _marker.add_line_strip(marker_odometry_rear, "odom", "odometry", 1, 0.8, 0.9, 0.1, 0.05);
+        _marker.add_line_strip(marker_odometry_rear, "map", "odometry", 1, 0.8, 0.9, 0.1, 0.05);
     }
 }
 
 void marker_route_routine()
 {
     if (marker_route_front.size() >= 2)
-        _marker.add_line_strip(marker_route_front, "odom", "route", 0, 0.7, 0.9, 0.8, 0.05);
+        _marker.add_line_strip(marker_route_front, "map", "route", 0, 0.7, 0.9, 0.8, 0.05);
 
     if (marker_route_rear.size() >= 2)
-        _marker.add_line_strip(marker_route_rear, "odom", "route", 1, 0.3, 0.0, 0.6, 0.05);
+        _marker.add_line_strip(marker_route_rear, "map", "route", 1, 0.3, 0.0, 0.6, 0.05);
 }
 
 //------------------------------------------------------------------------------
@@ -112,7 +112,66 @@ void algorithm_routine()
 
 void iddle_routine()
 {
+    static double speed = 25;
+
+    //==================================
+
     _led.led(0.2, 0.2, 0.2, 0.2, 0.2);
+
+    //==================================
+
+    geometry_msgs::Point p;
+    std::vector<geometry_msgs::Point> vector_of_p;
+
+    //==================================
+
+    for (int i = 0; i < 145; i++)
+    {
+        p.x = x_rear + pp.get_look_ahead_distance() * cosf(i * 2.5 * M_PI / 180);
+        p.y = y_rear + pp.get_look_ahead_distance() * sinf(i * 2.5 * M_PI / 180);
+        vector_of_p.push_back(p);
+    }
+    _marker.add_line_strip(vector_of_p, "map", "pp_lookahead", 0, 0.0, 1.0, 0.0, 0.05);
+
+    p.x = pp.x_goal;
+    p.y = pp.y_goal;
+    _marker.add_sphere(p, "map", "pp_goal", 0, 1.0, 0.0, 0.0, 0.50);
+
+    //==================================
+
+    pp.routine(x_rear, y_rear, th_rear);
+
+    jalan_manual(speed, -167 * pp.delta * 180 / M_PI, 1);
+
+    if (!prev_joy.l1 && joy.l1)
+    {
+        pp.set_look_ahead_distance(4.2);
+        _log.warn("LOOK AEHAD DISTANCE = 4.2m");
+    }
+
+    if (!prev_joy.r1 && joy.r1)
+    {
+        pp.set_look_ahead_distance(8.4);
+        _log.warn("LOOK AEHAD DISTANCE = 8.4m");
+    }
+
+    if (!prev_joy.triangle && joy.triangle)
+    {
+        speed += 5;
+        if (speed > 100)
+            speed = 100;
+
+        _log.warn("SPEED = %.0f", speed);
+    }
+
+    if (!prev_joy.cross && joy.cross)
+    {
+        speed -= 5;
+        if (speed < 0)
+            speed = 0;
+
+        _log.warn("SPEED = %.0f", speed);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -336,6 +395,9 @@ void load_route_routine()
             p.y = std::stod(row[4]);
             marker_route_rear.push_back(p);
         }
+
+        // Inisialisasi pure pursuit
+        pp.init(marker_route_rear);
 
         _log.info("Standby STATUS_ROUTE_LOAD");
         status_sub_algoritma = STATUS_ROUTE_LOAD_IDDLE;

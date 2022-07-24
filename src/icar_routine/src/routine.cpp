@@ -3,7 +3,6 @@
 //=====Timer
 ros::Timer tim_100hz;
 //=====Subscriber
-ros::Subscriber sub_odom;
 ros::Subscriber sub_stm32_to_pc_remote;
 ros::Subscriber sub_stm32_to_pc_throttle_position;
 ros::Subscriber sub_stm32_to_pc_steering_position;
@@ -11,6 +10,8 @@ ros::Subscriber sub_stm32_to_pc_steering_position;
 ros::Publisher pub_throttle;
 ros::Publisher pub_steering;
 ros::Publisher pub_transmission;
+//=====ServiceClient
+ros::ServiceClient cli_mavros_set_stream_rate;
 //=====TransformListener
 tf::TransformListener *transform_listener;
 //=====Miscellaneous
@@ -28,9 +29,6 @@ int status_sub_sub_algoritma = STATUS_IDDLE;
 
 //-----Odometry
 //=============
-bool odom_is_ready = false;
-nav_msgs::Odometry odom;
-
 double x = 0, y = 0, th = 0;
 double x_rear = 0, y_rear = 0, th_rear = 0;
 double x_front = 0, y_front = 0, th_front = 0;
@@ -75,7 +73,7 @@ std::vector<geometry_msgs::Point> marker_route_rear;
 
 //-----Pure Pursuit
 //=================
-pure_pursuit pp(2.1, 4.2);
+pure_pursuit pp(2.1, 10);
 
 int main(int argc, char **argv)
 {
@@ -87,7 +85,6 @@ int main(int argc, char **argv)
     //=====Timer
     tim_100hz = NH.createTimer(ros::Duration(0.01), cllbck_tim_100hz);
     //=====Subscriber
-    sub_odom = NH.subscribe("odom", 1, cllbck_sub_odom);
     sub_stm32_to_pc_remote = NH.subscribe("stm32_to_pc/remote", 1, cllbck_sub_stm32_to_pc_remote);
     sub_stm32_to_pc_throttle_position = NH.subscribe("stm32_to_pc/throttle_position", 1, cllbck_sub_stm32_to_pc_throttle_position);
     sub_stm32_to_pc_steering_position = NH.subscribe("stm32_to_pc/steering_position", 1, cllbck_sub_stm32_to_pc_steering_position);
@@ -95,6 +92,8 @@ int main(int argc, char **argv)
     pub_throttle = NH.advertise<std_msgs::Int16>("stm32_from_pc/throttle", 1);
     pub_steering = NH.advertise<std_msgs::Int16>("stm32_from_pc/steering", 1);
     pub_transmission = NH.advertise<std_msgs::Int8>("stm32_from_pc/transmission", 1);
+    //=====ServiceClient
+    cli_mavros_set_stream_rate = NH.serviceClient<mavros_msgs::StreamRate>("mavros/set_stream_rate");
     //=====TransformListener
     transform_listener = new tf::TransformListener(NH);
     //=====Miscellaneous
@@ -123,30 +122,6 @@ void cllbck_tim_100hz(const ros::TimerEvent &event)
 //------------------------------------------------------------------------------
 //==============================================================================
 
-void cllbck_sub_odom(const nav_msgs::OdometryConstPtr &msg)
-{
-    odom_is_ready = true;
-    odom = *msg;
-
-    x = msg->pose.pose.position.x;
-    y = msg->pose.pose.position.y;
-    th = tf::getYaw(msg->pose.pose.orientation);
-
-    transform_listener->waitForTransform("odom", "base_link", ros::Time(0), ros::Duration(0.1));
-
-    tf::StampedTransform transform;
-
-    transform_listener->lookupTransform("odom", "front_axle_link", ros::Time(0), transform);
-    x_front = transform.getOrigin().x();
-    y_front = transform.getOrigin().y();
-    th_front = tf::getYaw(transform.getRotation());
-
-    transform_listener->lookupTransform("odom", "rear_axle_link", ros::Time(0), transform);
-    x_rear = transform.getOrigin().x();
-    y_rear = transform.getOrigin().y();
-    th_rear = tf::getYaw(transform.getRotation());
-}
-
 void cllbck_sub_stm32_to_pc_remote(const std_msgs::UInt16MultiArrayConstPtr &msg)
 {
     for (int i = 0; i < 16; i++)
@@ -168,6 +143,14 @@ void cllbck_sub_stm32_to_pc_steering_position(const std_msgs::Int16ConstPtr &msg
 
 int routine_init()
 {
+    ros::Duration(2).sleep();
+
+    mavros_msgs::StreamRate srv_mavros_set_stream_rate;
+    srv_mavros_set_stream_rate.request.stream_id = 0;
+    srv_mavros_set_stream_rate.request.message_rate = 10;
+    srv_mavros_set_stream_rate.request.on_off = 1;
+    cli_mavros_set_stream_rate.call(srv_mavros_set_stream_rate);
+
     ros::Duration(2).sleep();
 
     route_path = getenv("HOME") + std::string("/icar-its-data/route");
@@ -201,6 +184,7 @@ int routine_init()
 
 int routine_routine()
 {
+    baca_posisi();
     baca_joystick();
     baca_keyboard();
     baca_metric();
@@ -210,46 +194,31 @@ int routine_routine()
     marker_odometry_routine();
     marker_route_routine();
 
-    if (!prev_joy.circle && joy.circle)
-    {
-        _log.warn("CIRCLE");
-        pp.init(marker_route_rear);
-    }
-
-    if (!prev_joy.square && joy.square)
-    {
-        _log.warn("SQUARE");
-        pp.routine(x_rear, y_rear, th_rear);
-    }
-
-    pp.routine(x_rear, y_rear, th_rear);
-
-    {
-        geometry_msgs::Point p;
-        std::vector<geometry_msgs::Point> vector_of_p;
-        for (int i = 0; i < 145; i++)
-        {
-            p.x = x_rear + pp.get_look_ahead_distance() * cosf(i * 2.5 * M_PI / 180);
-            p.y = y_rear + pp.get_look_ahead_distance() * sinf(i * 2.5 * M_PI / 180);
-            vector_of_p.push_back(p);
-        }
-        _marker.add_line_strip(vector_of_p, "odom", "pp_lookahead", 0, 0.0, 1.0, 0.0, 0.05);
-    }
-
-    {
-        geometry_msgs::Point p;
-        p.x = pp.x_goal;
-        p.y = pp.y_goal;
-        _marker.add_sphere(p, "odom", "pp_goal", 0, 1.0, 0.0, 0.0, 0.20);
-    }
-
-    jalan_manual(0, -167 * pp.delta * 180 / M_PI, 1);
-
     return 0;
 }
 
 //------------------------------------------------------------------------------
 //==============================================================================
+
+void baca_posisi()
+{
+    tf::StampedTransform transform;
+
+    transform_listener->lookupTransform("map", "base_link", ros::Time(0), transform);
+    x = transform.getOrigin().x();
+    y = transform.getOrigin().y();
+    th = tf::getYaw(transform.getRotation());
+
+    transform_listener->lookupTransform("map", "front_axle_link", ros::Time(0), transform);
+    x_front = transform.getOrigin().x();
+    y_front = transform.getOrigin().y();
+    th_front = tf::getYaw(transform.getRotation());
+
+    transform_listener->lookupTransform("map", "rear_axle_link", ros::Time(0), transform);
+    x_rear = transform.getOrigin().x();
+    y_rear = transform.getOrigin().y();
+    th_rear = tf::getYaw(transform.getRotation());
+}
 
 void baca_joystick()
 {
